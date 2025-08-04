@@ -4,7 +4,6 @@ import { PayeeInfo } from "../constant/constant";
 import { ApiUtilities } from "../utilities/ApiUtilities";
 import { truncateSync } from "fs";
 import { JsonUtilities } from "../utilities/JsonUtilities";
-import { th } from "@faker-js/faker/.";
 
 
 export class AccountPage extends BasePage{
@@ -73,7 +72,7 @@ export class AccountPage extends BasePage{
         await this.page.locator("//p[contains(.,' has been transferred from account #')]").isVisible();
     }
 
-    async payBillToAnotherAccount(fromAccountNumber: string, payeeAccountNumber: string, payee: PayeeInfo, amount: number ){
+    async payBillToAnotherAccount(fromAccountNumber: string, payeeAccountNumber: string, payee: PayeeInfo, amount: string ){
         await this.verifyAccountsOverviewLink();
         await this.page.locator("//a[@href='billpay.htm']").click()
         await this.page.locator("//h1[contains(., 'Bill Payment Service')]").isVisible();
@@ -86,28 +85,29 @@ export class AccountPage extends BasePage{
         await this.page.locator("input[name=payee\\.accountNumber]").fill(payeeAccountNumber);
         await this.page.locator("input[name=verifyAccount]").fill(payeeAccountNumber);
         await this.page.locator("select[name='fromAccountId']").selectOption(fromAccountNumber);
-        await this.page.locator("input[name='amount']").fill(amount.toString())
-        await this.page.getByRole("button", {name: "Send Payment"}).click();
-        await this.validateBillPaymentScreen(payee.payeeName, fromAccountNumber, amount.toString())
+        await this.page.locator("input[name='amount']").fill(amount.toString());
+        const sendPaymentBtn =this.page.getByRole('button', { name: 'SEND PAYMENT' });
+        console.log("enable", await sendPaymentBtn.isEnabled())
+        console.log("visible", await sendPaymentBtn.isVisible())
+        await this.page.waitForLoadState();
+        await this.page.getByRole('button', {name: 'SEND PAYMENT'}).click({force: true})
+        await this.validateBillPaymentScreen(payee.payeeName, fromAccountNumber, amount)
     }
 
     async validateBillPaymentScreen(payeeAccountName: string, fromAccountName: string, amount: string){
-        await this.page.locator("//p[contains(.,' Bill Payment to "+payeeAccountName+" in the amount of $"+amount+" from account "+fromAccountName+" was successful')]").isVisible();
+        await expect(this.page.locator("//p[contains(.,' Bill Payment to "+payeeAccountName+" in the amount of $"+amount+" from account "+fromAccountName+" was successful')]")).toBeVisible();
     }
 
-    async validateTransactionFromAccount(){
-        let transactionId = "15475"
+    async validateTransactionFromAccount(transactionId: string, amount: number){
         let apiResponse = await this.apiClient.get("transactions/"+transactionId)
-        let id = JsonUtilities.getProperty(apiResponse, "$.id")
-        console.log(id.toString().replace("[","").replace("]","").replace(" ",""))
+        let actualAmount = (JsonUtilities.getProperty(apiResponse, "$.amount")).toString().replace("[","").replace("]","").replace(" ","");
+        expect(actualAmount).toEqual(amount.toString())
     }
 
-    async getTransactionId(accountNumber: string, amount: string){
-        await this.page.locator("//a[@href='findtrans.htm]").click();
-        await this.page.selectOption("#accountId",{value: accountNumber});
-        await this.page.locator("#amount").fill(amount)
-        await this.page.getByRole("button", {name: "findByAmount"}).click();
-        await this.page.locator("//h1[contains(., 'Transaction Results')]").isVisible();
-        await this.page.locator("//a[contains(@href, '/parabank/transaction.htm?')]").click();
+    async getTransactionId(accountNumber: string, amount: string, payeeName: string){
+       await this.navigateToUrl("https://parabank.parasoft.com/parabank/activity.htm?id="+accountNumber);
+       await this.page.locator("//a[contains(text(), 'Bill Payment to "+payeeName+"')]").click()
+       let transactionId = await this.page.locator("//td[contains(., 'Transaction ID')]/following-sibling::td").textContent()
+       return transactionId? transactionId: "";
     }
 }
