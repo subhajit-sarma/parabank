@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+     tools {
+        nodejs "nodejs-22"
+    }
+
+    stages {
+        stage('Install dependencies') {
+            steps {
+                sh 'npm ci'
+            }
+        }
+
+        stage('Run Playwright Tests') {
+            steps {
+                sh 'npx playwright install --with-deps'
+                sh 'npx playwright test --reporter=html'
+            }
+        }
+    }
+}
