@@ -1,0 +1,71 @@
+import { expect, Page } from "@playwright/test"
+import test from "../src/fixtures/loginFixtures"
+import { PayeeInfo, UsersType } from "../src/constant/constant"
+import { LoginPage } from "../src/pages/LogInPage";
+import { AccountPage } from "../src/pages/AccountPage";
+import { DataGenerator } from "../src/utilities/DataGenerator";
+import { ApiUtilities } from "../src/utilities/ApiUtilities";
+import { JsonUtilities } from "../src/utilities/JsonUtilities";
+
+
+let bankPage: Page;
+let user: UsersType;
+let firstAccountNumber: string;
+
+test.beforeAll(async({loggedInUser})=>{
+    bankPage = loggedInUser.page;
+    user = loggedInUser.user;
+    firstAccountNumber = loggedInUser.firstAccountNumber;
+
+})
+
+
+test.describe("Para bank test", ()=>{
+
+    let testPage : Page
+    let newAccountNumber: string;
+
+    test.beforeEach(async({browser})=>{
+        console.log(user.userName);
+        let browserContext = await browser.newContext();
+        testPage = await browserContext.newPage();
+        let loginPageObj = new LoginPage(testPage);
+        await loginPageObj.loginAsUser(user.userName, "Welcome123")
+    })
+
+    test.afterEach(async()=>{
+        if(testPage){
+            testPage.close();
+        }
+    })
+
+
+    test("Global links check", async()=>{   
+        let accountPagePbj = new AccountPage(testPage)
+        await accountPagePbj.verifyNewAccountLink();
+        await accountPagePbj.verifyAccountsOverviewLink();
+        await accountPagePbj.verifyTransferFundsLink();
+    })
+
+    test("Create saving account and transfer from that account", async()=>{
+        let accountPagePbj = new AccountPage(testPage)
+        newAccountNumber = await accountPagePbj.openNewAccount("SAVINGS", firstAccountNumber)
+        await accountPagePbj.validateAccountOverview(newAccountNumber, "100.00", "100.00")
+        await accountPagePbj.transferfromAccount(newAccountNumber, firstAccountNumber, 15);
+        await accountPagePbj.validateAccountOverview(newAccountNumber, "85.00", "85.00")
+    })
+
+    test("pay bill to another account ", async()=>{
+        let accountPagePbj = new AccountPage(testPage);
+        let toAccountNumber = "12312423"
+        let payee: PayeeInfo = DataGenerator.getRandomPayeeDetails();
+        await accountPagePbj.payBillToAnotherAccount(newAccountNumber,toAccountNumber, payee, 15.00);   
+    })
+
+    test("validate transactions via api", async()=>{
+        let accountPagePbj = new AccountPage(testPage)
+        
+        await accountPagePbj.validateTransactionFromAccount()
+    })
+
+})
