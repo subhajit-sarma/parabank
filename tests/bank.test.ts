@@ -4,8 +4,6 @@ import { PayeeInfo, UsersType } from "../src/constant/constant"
 import { LoginPage } from "../src/pages/LogInPage";
 import { AccountPage } from "../src/pages/AccountPage";
 import { DataGenerator } from "../src/utilities/DataGenerator";
-import { ApiUtilities } from "../src/utilities/ApiUtilities";
-import { JsonUtilities } from "../src/utilities/JsonUtilities";
 
 
 let bankPage: Page;

@@ -109,7 +109,5 @@ export class AccountPage extends BasePage{
         await this.page.getByRole("button", {name: "findByAmount"}).click();
         await this.page.locator("//h1[contains(., 'Transaction Results')]").isVisible();
         await this.page.locator("//a[contains(@href, '/parabank/transaction.htm?')]").click();
-        
-
     }
 }
