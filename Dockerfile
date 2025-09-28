@@ -11,5 +11,7 @@ RUN npm install
 # Copy tests
 COPY . .
 
+ENV CI=true
+
 # Run tests by default
 CMD ["npx", "playwright", "test"]
