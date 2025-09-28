@@ -7,26 +7,23 @@ import { DataGenerator } from "../src/utilities/DataGenerator";
 
 
 let bankPage: Page;
+let testPage : Page
 let user: UsersType;
 let firstAccountNumber: string;
-
-test.beforeAll(async({loggedInUser})=>{
-    bankPage = loggedInUser.page;
-    user = loggedInUser.user;
-    firstAccountNumber = loggedInUser.firstAccountNumber;
-
-})
 
 
 test.describe.serial("Para bank test", ()=>{
 
-    let testPage : Page
+    
     let newAccountNumber: string;
     let payee: PayeeInfo = DataGenerator.getRandomPayeeDetails();
     let transferAmount = 15;
     let amountStr = transferAmount.toFixed(2);
 
-    test.beforeAll(async({browser})=>{
+    test.beforeAll(async({browser, loggedInUser})=>{
+        bankPage = loggedInUser.page;
+        user = loggedInUser.user;
+        firstAccountNumber = loggedInUser.firstAccountNumber;
         console.log(user.userName);
         let browserContext = await browser.newContext();
         testPage = await browserContext.newPage();

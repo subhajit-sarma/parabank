@@ -2,7 +2,6 @@ import { expect, Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 import { PayeeInfo } from "../constant/constant";
 import { ApiUtilities } from "../utilities/ApiUtilities";
-import { truncateSync } from "fs";
 import { JsonUtilities } from "../utilities/JsonUtilities";
 
 
