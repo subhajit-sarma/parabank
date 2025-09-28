@@ -1,0 +1,12 @@
+pipeline{
+    agent any
+    stages{
+        stage("Build Image"){
+            sh 'docker build -t test-automation .'
+        }
+
+        stage ("run docker image"){
+            sh 'docker run -v $(pwd)/test-results:/app/test-results test-automation'
+        }
+    }
+}
