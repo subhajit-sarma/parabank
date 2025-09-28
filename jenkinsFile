@@ -13,5 +13,18 @@ pipeline{
                 sh 'docker run -v $(pwd)/test-results:/app/test-results test-automation'   
             }
         }
+
+        stage("Publish HTML Report") {
+            steps {
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'test-results',
+                    reportFiles: 'index.html',
+                    reportName: 'Test Automation Report'
+                ])
+            }
+        }
     }
 }
