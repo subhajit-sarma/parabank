@@ -10,7 +10,7 @@ pipeline{
 
         stage ("run docker image"){
             steps{
-                sh "docker run -v $(pwd)/test-results:/app/test-results test-automation npx playwright test --grep ${params.tag}"
+                sh "docker run -v \$(pwd)/test-results:/app/test-results test-automation npx playwright test --grep ${params.tag}"
             }
         }
 
